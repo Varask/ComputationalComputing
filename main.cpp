@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <fstream>
 
 #include "./Tools/Explicit_Schemes.cpp"
 
@@ -105,10 +106,15 @@ class WaveEquationSolver
 
             if (!filename.empty()){
                 std::ofstream out(filename);
-                for (const auto& value : f){
-                    out << value << ",";
+                if(out?is_open()){
+                    for (const double& value : f){
+                        out << value << ",";
+                    }
+                    out << "\n";
+                    out.close();
+                } else {
+                    std:cerr << "Erreur d'ouverture du fichier :" << filename << std::endl;
                 }
-                out << "\n";
             }
         }
 
@@ -161,7 +167,7 @@ int main()
             inputs.push_back({u, L, -L/2, L/2, t[i], N[j], 0.5, SET2_Bondary});
         }
     }
-    
+
     return 0;
 }
 
