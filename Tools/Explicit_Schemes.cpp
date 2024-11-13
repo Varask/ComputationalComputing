@@ -40,7 +40,17 @@ class Implicit_Schemes {
 
 class Step_Schemes {
     public:
-    
+        static double RM_S1(double x, double dx, double t, double dt, double (*f)(double)){
+            return 1/2 * ((t + dt + t) - (dt / 2 * dx) * f(t + dt) - f(t));
+        }
+
+        static double RM_S2(double x, double dx, double t, double dt, double (*f)(double)){
+            return 1/2 * (t + t - dt) - (dt / 2 * dx) * f(t) - f(t - dt);
+        }
+
+        static double RM_F(double dx, double dt, double x, double t, double RMS1, double RMS2, double (*f)(double)){
+            return t - (dt / dx) * (f(RMS1) - f(RMS2));
+        }
 };
 
 

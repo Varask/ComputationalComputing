@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 
-#include "./BaseTools/Explicit_Schemes.cpp"
+#include "./Tools/Explicit_Schemes.cpp"
 
 struct Bondary
 {
@@ -24,6 +24,8 @@ struct Input
     Bondary bondary;
 };
 
+double N;
+
 double sign(double x){
     if (x > 0) return 1;
     if (x < 0) return -1;
@@ -41,10 +43,11 @@ double SET2_Function(double x){
 class WaveEquationSolver
 {
     public:
-        enum Scheme {E_FTBS, I_FTBS, Lax_Wendroff, Richtmyer_MultiStep, All};
+        enum Scheme {E_FTBS, I_FTBS, Lax_Wendroff, Richtmyer_MultiStep, data, All};
 
         double dt;
         double dx;
+        std::vector<double> f;
 
         WaveEquationSolver(Input input)
         {
@@ -52,6 +55,9 @@ class WaveEquationSolver
 
             this->dx = (input.x_max - input.x_min) / input.N;
             this->dt = input.CFL * dx / input.u;
+
+            f.resize(input.N, 0.0);
+            
         }
 
         WaveEquationSolver(double u, double L, double x_min, double x_max, double t_max, double N,double CFL, Bondary bondary)
@@ -68,15 +74,42 @@ class WaveEquationSolver
 
             this->dx = (input.x_max - input.x_min) / input.N;
             this->dt = input.CFL * dx / input.u;
+
+            f.resize(input.N, 0.0);
         }
 
         void solve(Scheme scheme, std::string filename = "")
         {
+
         }
 
-        void solve_E_FTBS(std::string filename = "")
-        {
+        void solve_E_FTBS(std::string filename = ""){
             
+            std::vector<double> f_next(input.N, 0.0);
+
+            for (int i = 0; i < input.N; ++i){
+                double x = input.x_min + i*dx;
+                f[i] = input.bondary.t0_function(x);
+            }
+
+            for (double t = 0; t < input.max; t += dt){
+                for (int i = 1; i < input.N; ++i){
+                    f_next[i] = f[i] - input.CFL * (f[i] - f[i - 1]);
+                }
+            }
+
+            f_next[0] = input.bondary.left;
+            f_next[input.N - 1] = input.bondary.right;
+
+            f = f_next;
+
+            if (!filename.empty()){
+                std::ofstream out(filename);
+                for (const auto& value : f){
+                    out << value << ",";
+                }
+                out << "\n";
+            }
         }
 
         void solve_I_FTBS(std::string filename = "")
