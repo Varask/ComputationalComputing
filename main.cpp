@@ -60,36 +60,48 @@ class WaveEquationSolver
         {
             std::vector<double> f_next(input.N, 0.0);
 
+            // Initialisation de f avec la fonction t0
             for (int i = 0; i < input.N; ++i) {
                 double x = input.x_min + i * dx;
                 f[i] = input.bondary.t0_function(x);
             }
 
-            for (double t = 0; t < input.x_max; t += dt) {
-                for (int i = 1; i < input.N; ++i) {
-                    f_next[i] = f[i] - input.CFL * (f[i] - f[i - 1]);
+            // Si un fichier est spécifié, on l'ouvre pour écrire
+            std::ofstream out(filename.c_str());
+            if (out.is_open()) {
+                // En-tête CSV : X, T, f(X,T)
+                out << "X, T, f(X,T)\n";
+
+                // Affichage des valeurs initiales dans le fichier CSV
+                for (int i = 0; i < input.N; ++i) {
+                    double x = input.x_min + i * dx;
+                    out << x << ", 0, " << f[i] << "\n";
                 }
-            }
 
-            f_next[0] = input.bondary.left;
-            f_next[input.N - 1] = input.bondary.right;
-            f = f_next;
-
-            if (!filename.empty()) {
-                std::ofstream out(filename.c_str());
-                if (out.is_open()) {
-                    for (size_t i = 0; i < f.size(); ++i) {
-                        out << f[i] << ",";
+                // Résolution de l'équation aux différences finies
+                for (double t = 0; t < input.t_max; t += dt) {
+                    for (int i = 1; i < input.N; ++i) {
+                        f_next[i] = f[i] - input.CFL * (f[i] - f[i - 1]);
                     }
-                    out << "\n";
-                    out.close();
-                } else {
-                    std::cerr << "Erreur d'ouverture du fichier : " << filename << std::endl;
+
+                    // Mises à jour des conditions aux bords
+                    f_next[0] = input.bondary.left;
+                    f_next[input.N - 1] = input.bondary.right;
+                    f = f_next;
+
+                    // Enregistrement des résultats à chaque étape de temps dans le fichier CSV
+                    for (int i = 0; i < input.N; ++i) {
+                        double x = input.x_min + i * dx;
+                        out << x << ", " << t + dt << ", " << f[i] << "\n";
+                    }
                 }
+
+                out.close(); // Fermeture du fichier CSV
+            } else {
+                std::cerr << "Erreur d'ouverture du fichier : " << filename << std::endl;
             }
         }
 };
-
 
 int main()
 {
@@ -117,6 +129,13 @@ int main()
             inputs.push_back(input1);
             inputs.push_back(input2);
         }
+    }
+
+    // Résolution pour chaque configuration d'entrée
+    for (const auto& input : inputs) {
+        std::string filename = "results_L_" + std::to_string(input.L) + "_u_" + std::to_string(input.u) + "_N_" + std::to_string(input.N) + ".csv";
+        WaveEquationSolver solver(input);
+        solver.solve_E_FTBS(filename);  // Résolution et écriture des résultats dans un fichier CSV
     }
 
     return 0;
