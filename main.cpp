@@ -84,7 +84,7 @@ class WaveEquationSolver
         }
 
         void solve_E_FTBS(std::string filename = ""){
-            
+
             std::vector<double> f_next(input.N, 0.0);
 
             for (int i = 0; i < input.N; ++i){
@@ -92,7 +92,7 @@ class WaveEquationSolver
                 f[i] = input.bondary.t0_function(x);
             }
 
-            for (double t = 0; t < input.max; t += dt){
+            for (double t = 0; t < input.x_max; t += dt){
                 for (int i = 1; i < input.N; ++i){
                     f_next[i] = f[i] - input.CFL * (f[i] - f[i - 1]);
                 }
@@ -144,12 +144,24 @@ int main()
     Bondary SET1_Bondary = {SET1_Function, 0, 1};
     Bondary SET2_Bondary = {SET2_Function, 0, 0};
 
-    std::vector<double> t = {5,10};
-    std::vector<double> N = {100,200,400};
-    
+    std::vector<double> t;
+    t.push_back(5);
+    t.push_back(10);
+
+    std::vector<double> N;
+    N.push_back(100);
+    N.push_back(200);
+    N.push_back(300);
+
     std::vector<Input> inputs;
 
-    Input testInput = {u, L, -L/2, L/2, 5, 100, SET1_Bondary};
+    for (size_t i = 0; i < t.size(); ++i){
+        for (size_t j = 0; j < N.size(); ++j){
+            inputs.push_back({u, L, -L/2, L/2, t[i], N[j], 0.5, SET1_Bondary});
+            inputs.push_back({u, L, -L/2, L/2, t[i], N[j], 0.5, SET2_Bondary});
+        }
+    }
+    
     return 0;
 }
 
