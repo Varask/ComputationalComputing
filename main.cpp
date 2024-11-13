@@ -99,15 +99,23 @@ int main()
     Bondary SET1_Bondary = {SET1_Function, 0, 1};
     Bondary SET2_Bondary = {SET2_Function, 0, 0};
 
-    std::vector<double> t_values = {5, 10};
-    std::vector<int> N_values = {100, 200, 300};  // Changed N to int for clarity
+    std::vector<double> t_values; 
+    t_values.push_back(5);
+    t_values.push_back(10);
+
+    std::vector<int> N_values;  
+    N_values.push_back(100);
+    N_values.push_back(200);
+    N_values.push_back(300);
 
     std::vector<Input> inputs;
 
     for (size_t i = 0; i < t_values.size(); ++i) {
         for (size_t j = 0; j < N_values.size(); ++j) {
-            inputs.push_back({u, L, -L/2, L/2, t_values[i], N_values[j], 0.5, SET1_Bondary});
-            inputs.push_back({u, L, -L/2, L/2, t_values[i], N_values[j], 0.5, SET2_Bondary});
+            Input input1 = {u, L, -L/2, L/2, t_values[i], N_values[j], 0.5, SET1_Bondary};
+            Input input2 = {u, L, -L/2, L/2, t_values[i], N_values[j], 0.5, SET2_Bondary};
+            inputs.push_back(input1);
+            inputs.push_back(input2);
         }
     }
 
