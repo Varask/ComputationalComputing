@@ -22,6 +22,11 @@ public:
     static double FTBS(double x, double dx, double dt,double u, double (*f)(double)) { // Forward Time Backward Space
         return f(x) - (u*dt / dx) * (f(x) - f(x - dx));
     }
+
+    static double FTBS_alternative(double x, double dx, double dt,double u, vector<double> precedentArray, int i) { // Forward Time Backward Space
+        return precedentArray[i] - (u*dt / dx) * (precedentArray[i] - precedentArray[i - 1]);
+    }
+    
 };
 
 

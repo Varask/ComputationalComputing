@@ -57,5 +57,11 @@ public:
             std::cout << "\n";
         }
     }
+
+
+    static bool fileIsExist(const std::string& filename) {
+        std::ifstream file(filename);
+        return file.good();
+    }
 };
  
