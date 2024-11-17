@@ -82,9 +82,10 @@ class WaveEquationSolver
                         double x = input.x_min + i * dx;
                         out << x << ", " << t + dt << ", " << f[i] << "\n";
                     }
-                }
 
+                }
                 out.close(); // Fermeture du fichier CSV
+                
             } else {
                 std::cerr << "Erreur d'ouverture du fichier : " << filename << std::endl;
             }
