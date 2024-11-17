@@ -1,26 +1,22 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 
 # Load the CSV file
-data = pd.read_csv('result.csv')
+file_path = 'test.csv'  # Replace with your actual file path if different
+data = pd.read_csv(file_path)
 
-# Group data by time
-grouped = data.groupby('time')
+# Combine the split column names into one: 'f(x,t)'
+data['f(x,t)'] = data['f(x']
 
-# Generate colors with varying opacity
-opacities = np.linspace(0.2, 1.0, len(grouped))
+# Drop the now redundant columns
+data = data.drop(columns=['f(x', 't)'])
 
-# Plot each time step as a red line with varying opacity
-plt.figure(figsize=(10, 6))
-for (time, group), alpha in zip(grouped, opacities):
-    plt.plot(group['pos'], group['value'], color='red', alpha=alpha)
+# Plot x vs f(x,t) for each unique value of t without displaying t in the legend
+for t in data['t'].unique():
+    subset = data[data['t'] == t]
+    plt.plot(subset['x'], subset['f(x,t)'])
 
-# Configure the plot
-plt.xlabel('Spatial Position')
-plt.ylabel('Solution Value')
-plt.title('Solution Comparison Across Time Steps (Red with Varying Opacity)')
-plt.grid(True)
-
-# Show the plot
+plt.xlabel('x')
+plt.ylabel('f(x,t)')
+plt.title('2D Plot of x vs f(x,t) for different values of t')
 plt.show()

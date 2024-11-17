@@ -128,7 +128,9 @@ public:
             spatial_positions.push_back(xConverters(i * dx, input.L));
         }
 
+
         data.push_back(initialRow);  // Add initial condition at t = 0
+
 
         for (int t = 1; t < step_t; t++) {
             std::vector<double> row;
@@ -141,15 +143,23 @@ public:
                     row.push_back(Explicit_Schemes::FTBS_alternative(spatial_positions[x], dx, dt, input.u, data[t - 1], x));  // Fix here
                 }
             }
+
             data.push_back(row);
         }
-
         if (!filename.empty()) {
             // open file
             std::ofstream file(filename);
             if (!file.is_open()) {
                 throw std::runtime_error("Unable to open file: " + filename);
+            } else {
+                file << "x,t,f(x,t)\n";
+                for (int t = 0; t < step_t; t++) {
+                    for (int x = 0; x < step_x; x++) {
+                        file << spatial_positions[x] << "," << t * dt << "," << data[t][x] << "\n";
+                    }
+                }
             }
+
             
         } else {
             for (const auto& row : data) {
@@ -208,6 +218,6 @@ int main() {
 
     WaveEquationSolver solver(testInput);
 
-    solver.solve(WaveEquationSolver::E_FTBS,"result.csv");
+    solver.solve(WaveEquationSolver::E_FTBS,"test.csv");
     return 0;
 }
