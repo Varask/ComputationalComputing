@@ -60,7 +60,13 @@ class WaveEquationSolver
         {
             if (filename != "" && filename.find(".csv"))
             {
-                
+            
+            std::ofstream out(filename); 
+            if (out.is_open())
+            {
+                out << "x, t, f\n";
+            }
+
             std::vector<double> f_next(input.N, 0.0);
 
             // Initialisation de f avec la fonction t0
@@ -80,10 +86,10 @@ class WaveEquationSolver
 
             f = f_next;
 
-            // Enregistrement des résultats à chaque étape de temps dans le fichier CSV
+            // Enregistrement des résultats à chaque étape de temps dans le fichier CSVcls
             for (int i = 0; i < input.N; ++i) {
                 double x = input.x_min + i * dx;
-                out << x << ", " << t + dt << ", " << f[i] << "\n";
+                out << x << ", " << i*dt << ", " << f[i] << "\n";
             }
 
             
@@ -93,7 +99,7 @@ class WaveEquationSolver
                 std::cerr << "Erreur d'ouverture du fichier : " << filename << std::endl;
             }
         }
-
+};
 
 int main()
 {
@@ -117,5 +123,9 @@ int main()
 
 
     Input testInput = {u, L, -L/2, L/2, 5, 100, CFL, SET1_Bondary};
+
+    WaveEquationSolver solver(testInput);
+    solver.solve_E_FTBS("test.csv");
+
     return 0;
 }
