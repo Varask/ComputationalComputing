@@ -58,6 +58,9 @@ class WaveEquationSolver
 
         void solve_E_FTBS(const std::string& filename = "")
         {
+            if (filename != "" && filename.find(".csv"))
+            {
+                
             std::vector<double> f_next(input.N, 0.0);
 
             // Initialisation de f avec la fonction t0
@@ -77,25 +80,26 @@ class WaveEquationSolver
 
             f = f_next;
 
-                    // Enregistrement des résultats à chaque étape de temps dans le fichier CSV
-                    for (int i = 0; i < input.N; ++i) {
-                        double x = input.x_min + i * dx;
-                        out << x << ", " << t + dt << ", " << f[i] << "\n";
-                    }
+            // Enregistrement des résultats à chaque étape de temps dans le fichier CSV
+            for (int i = 0; i < input.N; ++i) {
+                double x = input.x_min + i * dx;
+                out << x << ", " << t + dt << ", " << f[i] << "\n";
+            }
 
-                }
-                out.close(); // Fermeture du fichier CSV
-                
+            
+            out.close(); // Fermeture du fichier CSV
+
             } else {
                 std::cerr << "Erreur d'ouverture du fichier : " << filename << std::endl;
             }
         }
-};
+
 
 int main()
 {
     double L = 100.0;
     double u = 1.75;
+    double CFL = 0.8;
 
     Bondary SET1_Bondary = {SET1_Function, 0, 1};
     Bondary SET2_Bondary = {SET2_Function, 0, 0};
@@ -111,6 +115,7 @@ int main()
 
     std::vector<Input> inputs;
 
-    Input testInput = {u, L, -L/2, L/2, 5, 100, inputs[0].CFL, SET1_Bondary};
+
+    Input testInput = {u, L, -L/2, L/2, 5, 100, CFL, SET1_Bondary};
     return 0;
 }
