@@ -103,6 +103,7 @@ class WaveEquationSolver
 
 int main()
 {
+    //Variables
     double L = 100.0;
     double u = 1.75;
     double CFL = 0.8;
