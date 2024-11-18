@@ -36,6 +36,14 @@ class Implicit_Schemes {
         return 1/(1+u*dt/dx) * (f(x) + u*dt/dx * f(x - dx)); // ou u*dt/dx est le CFL
     }
 
+    static double I_FTBS(double x, double dx, double dt, double u, double (*f)(double)){
+        return (u * dt * f(x - dx) + dx * f(x)) / (u * dt + dx);
+    }
+
+    static double I_FTBS_alternative(double x, double dx, double dt, double u, vector<double> precedentArray, int i){
+        return ( u * dt * precedentArray[i - 1] + dx * precedentArray[i]) / (u * dt + dx);
+    }
+    
     static double Lax_Wendroff(double x, double dx, double dt,double u, double (*f)(double)) {
         return f(x) - (u*dt / (2*dx)) * (f(x + dx) - f(x - dx)) + (u*u*dt*dt / (2*dx*dx)) * (f(x + dx) - 2*f(x) + f(x - dx));
     }
