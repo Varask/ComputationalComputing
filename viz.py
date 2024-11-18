@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load the CSV file
-file_path = 'test.csv'  # Replace with your actual file path if different
+file_path = 'test_IFTBS.csv'  # Replace with your actual file path if different
 data = pd.read_csv(file_path)
 
 # Combine the split column names into one: 'f(x,t)'

@@ -39,7 +39,8 @@ class Implicit_Schemes {
     static double I_FTBS(double x, double dx, double dt, double u, double (*f)(double)){
         return (u * dt * f(x - dx) + dx * f(x)) / (u * dt + dx);
     }
-
+    //TODO: REFAIRE LA FORMULE
+    // ATTENTION ERREUR DANS LA FORMULE ON VEUT le precedent du meme array et pas le precedent de l'array precedent 
     static double I_FTBS_alternative(double x, double dx, double dt, double u, vector<double> precedentArray, int i){
         return ( u * dt * precedentArray[i - 1] + dx * precedentArray[i]) / (u * dt + dx);
     }
