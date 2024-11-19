@@ -36,13 +36,14 @@ class Implicit_Schemes {
         return 1/(1+u*dt/dx) * (f(x) + u*dt/dx * f(x - dx)); // ou u*dt/dx est le CFL
     }
 
+    //function to calculate the next value of the array
     static double I_FTBS(double x, double dx, double dt, double u, double (*f)(double)){
         return (u * dt * f(x - dx) + dx * f(x)) / (u * dt + dx);
     }
-    //TODO: REFAIRE LA FORMULE
-    // ATTENTION ERREUR DANS LA FORMULE ON VEUT le precedent du meme array et pas le precedent de l'array precedent 
-    static double I_FTBS_alternative(double x, double dx, double dt, double u, vector<double> precedentArray, int i){
-        return ( u * dt * precedentArray[i - 1] + dx * precedentArray[i]) / (u * dt + dx);
+    //adding alternative function using 'currentArray' instead of 'precedentArray' considering the calculus of [i] and [i-1] of the same array
+    static double I_FTBS_alternative(double x, double dx, double dt, double u, vector<double> currentArray, int i){
+        // Calcul de f[i] à l'instant t_{n+1} en utilisant f[i] et f[i-1] à t_n 
+        return ( u * dt * currentArray[i - 1] + dx * currentArray[i]) / (u * dt + dx);
     }
     
     static double Lax_Wendroff(double x, double dx, double dt,double u, double (*f)(double)) {
