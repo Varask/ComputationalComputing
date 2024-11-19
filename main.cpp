@@ -3,8 +3,9 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <regex>  
 
-#include "./Tools/Explicit_Schemes.cpp"
+#include "./Tools/Schemes.cpp"
 
 struct Bondary
 {
@@ -39,6 +40,15 @@ double SET2_Function(double x){
     return 0.5 * (exp(-x * x));
 }
 
+
+
+bool is_csv(const std::string& filename)
+{
+    std::regex csv_regex(".*\\.csv");
+    return std::regex_match(filename, csv_regex);
+}
+
+
 class WaveEquationSolver
 {
     public:
@@ -46,105 +56,98 @@ class WaveEquationSolver
 
         double dt;
         double dx;
-        std::vector<double> f;
+        std::vector<vector <double>> matrix; // 2D array 
         Input input;
 
         WaveEquationSolver(Input input) : input(input)
         {
             this->dx = (input.x_max - input.x_min) / input.N;
             this->dt = input.CFL * dx / input.u;
-            f.resize(input.N, 0.0);
         }
+
+        void writeMatixToCSV(string filename){
+            if (is_csv(filename)){
+                std::ofstream out(filename); 
+                if (out.is_open())
+                {
+                    out << "x, t, f\n";
+                    for (int i = 0; i < matrix.size(); i++) {
+                        for (int j = 0; j < matrix[i].size(); j++) {
+                            double x = input.x_min + j * dx;
+                            out << x << ", " << i*dt << ", " << matrix[i][j] << "\n";
+                        }
+                    }
+                }
+                out.close(); // Closing csv file
+            }
+            else {
+                std::cerr << "Erreur d'ouverture du fichier : " << filename << std::endl;
+            }
+        }
+
+
 
         void solve_E_FTBS(const std::string& filename = "")
         {
-            if (filename != "" && filename.find(".csv"))
-            {
+            //clear the matrix
+            matrix.clear();
             
-            std::ofstream out(filename); 
-            if (out.is_open())
-            {
-                out << "x, t, f\n";
-            }
-   
-            std::vector<double> f_next(input.N, 0.0);
+            // init the 1srt row of the matrix
+            std::vector<double> row; 
 
-            // Initialisation de f avec la fonction t0
-            for (int i = 0; i < input.N; ++i) {
+            for (int i = 0; i < input.N; i++) {
                 double x = input.x_min + i * dx;
-                f[i] = input.bondary.t0_function(x);
+                double value = input.bondary.t0_function(x);
+                row.push_back(value);
             }
 
-            for (double t = 0; t < input.x_max; t += dt){
-                for (int i = 1; i < input.N; ++i){
-                    f_next[i] = f[i] - input.CFL * (f[i] - f[i - 1]);
+            matrix.push_back(row);
+
+            // Calcul for the next rows
+
+            for (double t = dt; t < input.t_max; t += dt){
+                for (int i = 1; i < input.N; i++){
+                    double x = input.x_min + i * dx;
+                    double value = Explicit_Schemes::FTBS_alternative(x, dx, dt, input.u, matrix[matrix.size() - 1], i);
+                    row[i] = value;
                 }
+                matrix.push_back(row);
             }
 
-            f_next[0] = input.bondary.left;
-            f_next[input.N - 1] = input.bondary.right;
+            writeMatixToCSV(filename);
 
-            f = f_next;
-
-            // Enregistrement des résultats à chaque étape de temps dans le fichier CSVcls
-            for (int i = 0; i < input.N; ++i) {
-                double x = input.x_min + i * dx;
-                out << x << ", " << i*dt << ", " << f[i] << "\n";
-            }
-
-            
-            out.close(); // Fermeture du fichier CSV
-
-            } else {
-                std::cerr << "Erreur d'ouverture du fichier : " << filename << std::endl;
-            }
         }
 
         //adding void function solve_I_FTBS adapted from solve_E_FTBS
         void solve_I_FTBS(const std::string& filename = "")
         {
-            if (filename != "" && filename.find(".csv"))
-            {
+            //clear the matrix
+            matrix.clear();
             
-            std::ofstream out(filename); 
-            if (out.is_open())
-            {
-                out << "x, t, f\n";
-            }
-   
-            std::vector<double> f_next(input.N, 0.0);
+            // init the 1srt row of the matrix
+            std::vector<double> row; 
 
-            // Initialising f with t0 function
-            for (int i = 0; i < input.N; ++i) {
+            for (int i = 0; i < input.N; i++) {
                 double x = input.x_min + i * dx;
-                f[i] = input.bondary.t0_function(x);
+                double value = input.bondary.t0_function(x);
+                row.push_back(value);
             }
 
-            for (double t = 0; t < input.x_max; t += dt){
-                for (int i = 1; i < input.N; ++i){
-                    //adapting f_next[i] considering the implicit FTBS scheme
-                    f_next[i] = (input.u * dt * f[i - 1] + dx * f[i]) / (input.u * dt + dx);
+            matrix.push_back(row);
+
+            // Calcul for the next rows
+
+            for (double t = dt; t < input.t_max; t += dt){
+                for (int i = 1; i < input.N; i++){
+                    double x = input.x_min + i * dx;
+                    double value = Implicit_Schemes::I_FTBS_alternative(x, dx, dt, input.u, row[i-1], matrix[matrix.size() - 1], i);
+                    row[i] = value;
                 }
+                matrix.push_back(row);
             }
 
-            f_next[0] = input.bondary.left;
-            f_next[input.N - 1] = input.bondary.right;
-
-            f = f_next;
-
-            // Saving results for each time step un csv file
-            for (int i = 0; i < input.N; ++i) {
-                double x = input.x_min + i * dx;
-                out << x << ", " << i*dt << ", " << f[i] << "\n";
-            }
-
-            
-            out.close(); // Closing csv file
-
-            } else {
-                std::cerr << "Erreur d'ouverture du fichier : " << filename << std::endl;
-            }
-        }
+            writeMatixToCSV(filename);
+        };
 };
 
 int main()
@@ -169,13 +172,14 @@ int main()
     std::vector<Input> inputs;
 
 
-    Input testInput = {u, L, -L/2, L/2, 5, 100, CFL, SET1_Bondary};
+    Input testInput = {u, L, -L/2, L/2, 10, 100, CFL, SET1_Bondary};
 
     WaveEquationSolver solver(testInput);
     //putting the previous solving command in comment to test the new one
     //solver.solve_E_FTBS("test.csv");
     
-    solver.solve_I_FTBS("I_FTBS_test.csv");
+    solver.solve_E_FTBS("test.csv");
+    solver.solve_I_FTBS("test2.csv");
 
     return 0;
 }
