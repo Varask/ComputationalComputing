@@ -20,3 +20,7 @@ f_{i}^{n+1} = f_{i}^{n} - \frac{c \Delta t}{2 \Delta x} (f_{i+1}^{n} - f_{i-1}^{
 $$
 
 ## Ritchmyer multi-step
+
+$$
+f_{i}^{n+1} = f_{i}^{n} + \frac{u \Delta t}{2 \Delta x}(f_{i-1}^{n} - f_{i+1}^{n}) + \frac{u^2 \Delta t^2}{2 \Delta x^2}(f_{i+1}^{n} - 2 f_{i}^{n} + f_{i-1}^{n})
+$$
