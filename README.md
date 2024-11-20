@@ -8,8 +8,9 @@ $$
 
 ## Implicit FTBS
 
-
-
+$$
+f_{i}^{n+1} = (\Delta x f_{i}^{n} - c \Delta t f_{i+1}^{n+1}) \frac{\Delta x - c * \Delta t}
+$$
 
 
 ## Lax-Wendrof
