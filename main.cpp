@@ -4,6 +4,14 @@
 #include <string>
 #include <fstream>
 #include <regex>  
+#include <cstdlib>
+#ifdef _WIN32
+#include <direct.h> // Pour _mkdir sous Windows
+#else
+#include <sys/stat.h> // Pour mkdir sous Linux/Mac
+#endif
+
+
 
 #include "./Tools/Schemes.cpp"
 
@@ -20,7 +28,7 @@ struct Input
     double L;       //  m
     double x_min;   //  m
     double x_max;   //  m
-    double t_max;       //  s
+    int t_max;       //  s
     int N;       //  number of points, should be integer
     double CFL;     //  Courant-Friedrichs-Lewy number
     Bondary bondary;
@@ -148,19 +156,100 @@ class WaveEquationSolver
 
             writeMatixToCSV(filename);
         };
+
+        void solve_Lax_Wendroff(const std::string& filename = "")
+        {
+            //clear the matrix
+            matrix.clear();
+            std::vector<double> row;
+
+            // init the 1srt row of the matrix with the initial condition
+            for (int i = 0; i < input.N; i++) {
+                double x = input.x_min + i * dx;
+                double value = input.bondary.t0_function(x);
+                row.push_back(value);
+            }
+
+            matrix.push_back(row);
+
+            for (double t = dt; t < input.t_max; t += dt){
+                for (int i = 2; i < input.N - 2; i++){
+                    double x = input.x_min + i * dx;
+                    double value = Explicit_Schemes::Lax_Wendroff(x, dx, dt, input.u, matrix[matrix.size() - 1], i);
+                    row[i] = value;
+                }
+                matrix.push_back(row);
+            }
+
+            writeMatixToCSV(filename);
+        };
+
+        void solve_Richtmyer_MultiStep(const std::string& filename = "")
+        {
+            //clear the matrix
+            matrix.clear();
+            std::vector<double> row;
+            std::vector<double> row_half;
+
+            // init the 1srt row of the matrix with the initial condition
+            for (int i = 0; i < input.N; i++) {
+                double x = input.x_min + i * dx;
+                double value = input.bondary.t0_function(x);
+                row.push_back(value);
+            }
+
+            matrix.push_back(row);
+            row_half = row;
+
+            for (double t = dt; t < input.t_max; t += dt){
+                for (int i = 1; i < input.N - 2; i++){
+                    double x = input.x_min + i * dx;
+                    double value = Step_Schemes::Ritchmyer_method_prediction(x, dx, dt, input.u, matrix[matrix.size() - 1], i);
+                    row_half[i] = value;
+                }
+
+                for (int i = 1; i < input.N - 2; i++){
+                    double x = input.x_min + i * dx;
+                    double value = Step_Schemes::Ritchmyer_method_correction(x, dx, dt, input.u, matrix[matrix.size() - 1], row_half, i);
+                    row[i] = value;
+                } 
+                matrix.push_back(row);          
+            }
+
+
+
+            writeMatixToCSV(filename);
+        };
 };
+
+void createFolder(const std::string& folder) {
+#ifdef _WIN32
+    if (_mkdir(folder.c_str()) != 0) { // Crée le dossier (Windows)
+        perror("Erreur lors de la création du dossier");
+    }
+#else
+    if (mkdir(folder.c_str(), 0777) != 0) { // Crée le dossier avec les permissions (Linux/Mac)
+        perror("Erreur lors de la création du dossier");
+    }
+#endif
+}
+
 
 int main()
 {
+    std::string folder = "Results";
+    createFolder(folder);
+
+
     //Variables
     double L = 100.0;
     double u = 1.75;
     double CFL = 0.8;
 
-    Bondary SET1_Bondary = {SET1_Function, 0, 1};
-    Bondary SET2_Bondary = {SET2_Function, 0, 0};
+    Bondary SET1_SIGN = {SET1_Function, 0, 1};
+    Bondary SET2_EXP = {SET2_Function, 0, 0};
 
-    std::vector<double> t_values; 
+    std::vector<int> t_values; 
     t_values.push_back(5);
     t_values.push_back(10);
 
@@ -172,14 +261,35 @@ int main()
     std::vector<Input> inputs;
 
 
-    Input testInput = {u, L, -L/2, L/2, 10, 100, CFL, SET1_Bondary};
+    Input testInput = {u, L, -L/2, L/2, 10, 100, CFL, SET1_SIGN};
 
     WaveEquationSolver solver(testInput);
-    //putting the previous solving command in comment to test the new one
-    //solver.solve_E_FTBS("test.csv");
-    
-    solver.solve_E_FTBS("test.csv");
-    solver.solve_I_FTBS("test2.csv");
+
+    for (int n : N_values){
+        for (int t : t_values){
+            for (Bondary bondary : {SET1_SIGN, SET2_EXP}){
+                Input input = {u, L, -L/2, L/2, t, n, CFL, bondary};
+                inputs.push_back(input);
+            }
+        }
+    }
+
+    for (Input input : inputs){
+        WaveEquationSolver solver(input);
+
+        std::string bondary_name =  (input.bondary.t0_function == SET1_Function) ? "SET1_sign" : 
+                                    (input.bondary.t0_function == SET2_Function) ? "SET2_exp" : 
+                                    "UNKNOWN";
+
+        //solver.solve_E_FTBS(folder+"/E_FTBS_" +bondary_name+"_"+ std::to_string(input.N) + "_" + std::to_string(input.t_max) + ".csv");
+        //OK
+        //solver.solve_I_FTBS(folder+"/I_FTBS_" +bondary_name+"_"+ std::to_string(input.N) + "_" + std::to_string(input.t_max) + ".csv");
+        //OK
+        //solver.solve_Lax_Wendroff(folder+"/LW_" +bondary_name+"_"+ std::to_string(input.N) + "_" + std::to_string(input.t_max) + ".csv");
+        //OK 
+        solver.solve_Richtmyer_MultiStep(folder+"/Richtmyer_" +bondary_name+"_"+ std::to_string(input.N) + "_" + std::to_string(input.t_max) + ".csv");
+        //
+    }
 
     return 0;
 }
