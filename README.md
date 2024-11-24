@@ -22,13 +22,13 @@ $$
 
 ## **Méthode de Richtmyer**
 La méthode de Richtmyer combine :
-1. Une **étape de prédiction** avec Lax-Friedrichs :
+### Une **étape de prédiction** avec Lax-Friedrichs :
 
    $$
    u_{i+\frac{1}{2}}^{n+\frac{1}{2}} = \frac{u_{i+1}^n + u_i^n}{2} - \frac{\sigma}{2}(u_{i+1}^n - u_i^n)
    $$
 
-2. Une **étape de correction** avec Leapfrog :
+### Une **étape de correction** avec Leapfrog :
 
    $$
    u_i^{n+1} = u_i^n - \sigma (u_{i+\frac{1}{2}}^{n+\frac{1}{2}} - u_{i-\frac{1}{2}}^{n+\frac{1}{2}})
