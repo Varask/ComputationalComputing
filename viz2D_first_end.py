@@ -4,8 +4,7 @@ import os
 
 def plot_csv(file_path, output_folder, min_height=0.2, margin_factor=0.2):
     """
-    Generate a 2D plot of x vs f(x, t) for different time values (t) from a CSV file,
-    ensuring the initial condition (t=0) is prominently displayed and a margin is added to the y-axis.
+    Generate a 2D plot of x vs f(x, t) for only the first (t=min_t) and last (t=max_t) time values.
     """
     # Load the CSV file
     data = pd.read_csv(file_path)
@@ -13,22 +12,20 @@ def plot_csv(file_path, output_folder, min_height=0.2, margin_factor=0.2):
     # Strip any leading or trailing spaces from column names
     data.columns = data.columns.str.strip()
 
-    # Normalize time values for transparency scaling
+    # Extract the first and last time values
     t_values = data['t'].unique()
     min_t, max_t = t_values.min(), t_values.max()
 
     # Set up the figure
     plt.figure(figsize=(8, 4))  # Width=8 inches, Height=4 inches
 
-    # Plot the initial condition (t = min_t) prominently
+    # Plot the first time point (t = min_t)
     subset_t0 = data[data['t'] == min_t]
     plt.plot(subset_t0['x'], subset_t0['f'], color='red', linewidth=2, label=f'T0: t={min_t:.2f} (initial)')
 
-    # Plot the rest with lighter colors and variable opacity
-    for t in t_values[1:]:
-        subset = data[data['t'] == t]
-        alpha = (t - min_t) / (max_t - min_t)  # Normalize to range [0, 1]
-        plt.plot(subset['x'], subset['f'], color='blue', alpha=alpha, linestyle='--', label=f't={t:.2f}')
+    # Plot the last time point (t = max_t)
+    subset_t_last = data[data['t'] == max_t]
+    plt.plot(subset_t_last['x'], subset_t_last['f'], color='blue', linewidth=2, linestyle='--', label=f'TN: t={max_t:.2f} (final)')
 
     # Customize the plot
     plt.xlabel('x')
@@ -64,7 +61,7 @@ def plot_csv(file_path, output_folder, min_height=0.2, margin_factor=0.2):
 def main():
     """
     Process all CSV files in the 'Results' folder and generate a 2D plot for each,
-    ensuring the initial condition (t=0) is prominently displayed.
+    showing only the first and last time points.
     """
     # Input and output folder paths
     input_folder = 'Results'

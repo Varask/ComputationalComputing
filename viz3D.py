@@ -1,12 +1,11 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
 import os
 
-def plot_3d_csv(file_path):
+def plot_3d_csv(file_path, output_folder):
     """
-    Reads a CSV file and generates a 3D visualization.
+    Reads a CSV file and generates a 3D visualization, saving the plot in the specified output folder.
     """
     # Load the data
     df = pd.read_csv(file_path)
@@ -40,8 +39,8 @@ def plot_3d_csv(file_path):
     ax.set_zlabel('f')
     ax.set_title(f'3D Visualization - {os.path.basename(file_path)}')
     
-    # Save the plot
-    output_file = os.path.splitext(file_path)[0] + "_3D_plot.png"
+    # Save the plot in the specified output folder
+    output_file = os.path.join(output_folder, os.path.basename(file_path).replace('.csv', '_3D_plot.png'))
     plt.savefig(output_file)
     print(f"Plot saved: {output_file}")
     
@@ -50,22 +49,31 @@ def plot_3d_csv(file_path):
 
 def main():
     """
-    Main function to process all CSV files in the 'Results' folder.
+    Main function to process all CSV files in the 'Results' folder and save plots in the 'Images' folder.
     """
-    folder = 'Results'
-    if not os.path.exists(folder):
-        print(f"The folder '{folder}' does not exist.")
+    # Input and output folder paths
+    input_folder = 'Results'
+    output_folder = 'Images'
+
+    # Ensure the output folder exists
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    
+    if not os.path.exists(input_folder):
+        print(f"The folder '{input_folder}' does not exist.")
         return
     
-    csv_files = [os.path.join(folder, f) for f in os.listdir(folder) if f.endswith('.csv')]
+    # Get all CSV files in the input folder
+    csv_files = [os.path.join(input_folder, f) for f in os.listdir(input_folder) if f.endswith('.csv')]
     
     if not csv_files:
-        print(f"No CSV files found in the folder '{folder}'.")
+        print(f"No CSV files found in the folder '{input_folder}'.")
         return
     
+    # Process each CSV file
     for file in csv_files:
         print(f"Processing file: {file}")
-        plot_3d_csv(file)
+        plot_3d_csv(file, output_folder)
 
 if __name__ == "__main__":
     main()
