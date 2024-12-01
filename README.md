@@ -1,36 +1,33 @@
 # ComputationalComputing
 
-## Explicit FTBS
-
-$$
-f(n+1) = f(n)-(u*\frac{dt}{dx})*(f(x)-f(x-dx))
-$$
-
-## Implicit FTBS
-
-$$
-f_{i}^{n+1} = \frac{\Delta x f_{i}^{n} - c \Delta t f_{i+1}^{n+1}}{\Delta x - c * \Delta t}
-$$
+## How to use 
 
 
+First Download the project: 
+```bash
+   cd your_folder
+   git clone https://github.com/Varask/ComputationalComputing.git
+```
 
-## **Méthode de Lax-Wendroff**
+When you have the project download you can launch the `main.cpp`
 
-$$ 
-u_i^{n+1} = u_i^n - {\sigma \over 2}(u_{i+1}^n - u_{i-1}^n)+{\sigma^2 \over 2} (u_{i+1}^n - 2u_i^n + u_{i-1}^n)
-$$
+use your prefered compiler as commonly use G++ : 
 
-## **Méthode de Richtmyer**
-La méthode de Richtmyer combine :
-### Une **étape de prédiction** avec Lax-Friedrichs :
+```bash
+   g++ .\main.cpp -o main
+```
 
-   $$
-   u_{i+\frac{1}{2}}^{n+\frac{1}{2}} = \frac{u_{i+1}^n + u_i^n}{2}-\frac{\sigma}{2}(u_{i+1}^n - u_i^n)
-   $$
+Now some data have been produce in the folder `Results`
 
-### Une **étape de correction** avec Leapfrog :
+   *NOTE: the filename contain all the parameter that you've inputed ex: E_FTBS_SET1_sign_100_10 [Scheme/ SET of Bondaries / the number of iteration / Tmax ]*
 
-   $$
-   u_i^{n+1} = u_i^n - \sigma (u_{i+\frac{1}{2}}^{n+\frac{1}{2}} -u_{i-\frac{1}{2}}^{n+\frac{1}{2}})
-   $$
+If you want to graph some plot you can use the python(Yes yoy need python i could have use ) files:
 
+ATTENTION: you need to have all the packages
+
+you can easaly install those via pip using this command: 
+```bash
+   pip install pandas matplotlib numpy 
+```
+___
+# Have Fun 
